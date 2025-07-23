@@ -1,0 +1,1 @@
+// This file has been moved to utils/generateToken.js for better organization. 
