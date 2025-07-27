@@ -28,6 +28,7 @@ const challengeSchema = new mongoose.Schema({
     enum: ['beginner', 'intermediate', 'advanced'],
     default: 'beginner'
   },
+  // NEW: Challenge duration type
   duration_type: {
     type: String,
     enum: ['short_term', 'long_term'],
@@ -35,11 +36,12 @@ const challengeSchema = new mongoose.Schema({
     default: 'short_term'
   },
   estimated_duration: {
-    type: Number,
+    type: Number, // in minutes for short-term, days for long-term
     required: true,
     min: 1,
-    max: 365
+    max: 365 // Max 365 days for long-term challenges
   },
+  // NEW: Duration unit
   duration_unit: {
     type: String,
     enum: ['minutes', 'hours', 'days', 'weeks'],
@@ -70,16 +72,19 @@ const challengeSchema = new mongoose.Schema({
     enum: ['daily', 'weekly', 'monthly', 'one_time'],
     default: 'one_time'
   },
+  // NEW: Expected HRV improvement
   expected_hrv_impact: {
     type: String,
     enum: ['low', 'moderate', 'high'],
     default: 'moderate'
   },
+  // NEW: Challenge type
   challenge_type: {
     type: String,
     enum: ['default', 'user_created'],
     default: 'default'
   },
+  // NEW: Creator information
   created_by_user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -91,9 +96,10 @@ const challengeSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  // NEW: Public/Private for user-created challenges
   is_public: {
     type: Boolean,
-    default: false
+    default: false // User challenges are private by default
   },
   created_by: {
     type: String,
@@ -103,7 +109,7 @@ const challengeSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// User Challenge Completion Schema
+// User Challenge Completion Schema (Enhanced)
 const userChallengeSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -117,13 +123,16 @@ const userChallengeSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['not_started', 'in_progress', 'completed', 'skipped'],
+    enum: ['not_started', 'in_progress', 'completed', 'skipped', 'paused'],
     default: 'not_started'
   },
   started_at: {
     type: Date
   },
   completed_at: {
+    type: Date
+  },
+  paused_at: {
     type: Date
   },
   user_response: {
@@ -144,14 +153,56 @@ const userChallengeSchema = new mongoose.Schema({
   completion_streak: {
     type: Number,
     default: 0
+  },
+  // NEW: HRV tracking for challenge
+  hrv_before: {
+    type: Number,
+    min: 0,
+    max: 100
+  },
+  hrv_after: {
+    type: Number,
+    min: 0,
+    max: 100
+  },
+  hrv_improvement: {
+    type: Number // Calculated: hrv_after - hrv_before
+  },
+  // For long-term challenges
+  daily_check_ins: [{
+    date: Date,
+    status: {
+      type: String,
+      enum: ['completed', 'missed', 'partial']
+    },
+    notes: String,
+    hrv_score: Number
+  }],
+  progress_percentage: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0
   }
 }, {
   timestamps: true
 });
 
+// Calculate HRV improvement before saving
+userChallengeSchema.pre('save', function(next) {
+  if (this.hrv_before && this.hrv_after) {
+    this.hrv_improvement = this.hrv_after - this.hrv_before;
+  }
+  next();
+});
+
 // Indexes for efficient querying
 challengeSchema.index({ category: 1, difficulty_level: 1 });
 challengeSchema.index({ is_active: 1 });
+challengeSchema.index({ duration_type: 1 });
+challengeSchema.index({ challenge_type: 1 });
+challengeSchema.index({ created_by_user: 1 });
+
 userChallengeSchema.index({ userId: 1, challengeId: 1 }, { unique: true });
 userChallengeSchema.index({ userId: 1, status: 1 });
 

@@ -6,7 +6,10 @@ const journalRoutes = require('./routes/journal');
 const userRoutes = require('./routes/user'); // ✅ Correct path
 const cors = require('cors');
 const soundRoutes = require('./routes/sound');
+const bookRoutes = require('./routes/book');
+const podcastRoutes = require('./routes/podcast');
 const path = require('path');
+const challengeRoutes = require('./routes/challenge');
 
 // Connect to MongoDB
 connectDB();
@@ -20,6 +23,9 @@ app.use('/user', userRoutes);
 app.use('/journal', journalRoutes);
 app.use('/dashboard', require('./routes/dashboard'));
 app.use('/sound', soundRoutes);
+app.use('/books', bookRoutes);
+app.use('/podcasts', podcastRoutes);
+app.use('/challenge', challengeRoutes);
 app.use('/sounds', express.static(path.join(__dirname, '..', 'public', 'sounds')));
 
 // Example route
@@ -31,4 +37,4 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
-}); 
+});

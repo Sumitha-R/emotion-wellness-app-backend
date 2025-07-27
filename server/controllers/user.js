@@ -20,7 +20,7 @@ const signup = async (req, res) => {
     // Create JWT
     const token = jwt.sign(
       { id: newUser._id, name: newUser.name },
-      process.env.JWT,
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -46,7 +46,7 @@ const login = async (req, res) => {
     // Sign token
     const token = jwt.sign(
       { id: user._id, name: user.name },
-      process.env.JWT,
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
